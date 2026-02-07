@@ -1,0 +1,342 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "e7154287-7788-4feb-bf6b-4cf0f0af9af5",
+   "metadata": {},
+   "source": [
+    "ML_LAB4"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "ba6b1623-6d39-4f43-bda4-d115d21fd136",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#import libraries\n",
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "#convert text into numeric vectors\n",
+    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "\n",
+    "#knn classifier\n",
+    "from sklearn.neighbors import KNeighborsClassifier\n",
+    "\n",
+    "#evaluation metrics\n",
+    "from sklearn.metrics import confusion_matrix,precision_score, recall_score,f1_score\n",
+    "\n",
+    "#split data into train and test\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "\n",
+    "#hyperparameter tuning\n",
+    "from sklearn.model_selection import GridSearchCV"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "396c7da6-87e3-448e-a14b-16fd8fc0c725",
+   "metadata": {},
+   "source": [
+    "A3: LOAD DATASET"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "c75fefc4-2f3d-40bf-b31c-0f341cb3723f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "def load_data():\n",
+    "\n",
+    "#read csv file\n",
+    "    df = pd.read_csv(r\"C:\\Users\\User\\Downloads\\SEM_4_MACHINE_LEARNING\\Fact-NonFact Data(Sheet1).csv\")\n",
+    "\n",
+    "#input feature - text column\n",
+    "    X = df[\"Doc\"]\n",
+    "\n",
+    "#output label - fact/Non-fact\n",
+    "    y = df[\"Label\"]\n",
+    "\n",
+    "#convert labels into numeric values\n",
+    "#Fact = 1, Non-Fact = 0\n",
+    "    y = y.map({\"Fact\": 1, \"Non-Fact\" : 0})\n",
+    "\n",
+    "    return X,y"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d68d7512-bd91-4320-90e1-e137a9998378",
+   "metadata": {},
+   "source": [
+    "A4: CONVERT TEXT TO NUMERIC FEATURES"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "49c316e9-d568-41a5-a8ba-c96c0c54bf17",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "def vectorize_text(X):\n",
+    "     #create TF IDF VECTORIZER\n",
+    "    vectorizer = TfidfVectorizer()\n",
+    "\n",
+    "    #convert text into numeric vectors\n",
+    "    X_vec = vectorizer.fit_transform(X)\n",
+    "\n",
+    "    return X_vec"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bba72af5-da56-4462-b2be-45b80db95e5e",
+   "metadata": {},
+   "source": [
+    "A6: TRAIN KNN MODEL"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "6364743b-160b-4cc7-9e21-750b39af8f8f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#train knn model\n",
+    "def train_knn(X_train, Y_train, k):\n",
+    "\n",
+    "    #create knn model with chosen k value\n",
+    "    model = KNeighborsClassifier(n_neighbors=k)\n",
+    "\n",
+    "    #train model\n",
+    "    model.fit(X_train, y_train)\n",
+    "\n",
+    "    return model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "591cafe9-7203-403d-8b11-b84bf92784bc",
+   "metadata": {},
+   "source": [
+    "A1: EVALUATION FUNCTION"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "56bfddd1-600a-4778-8b85-dce67998c89b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def evaluate_model(model,X,y):\n",
+    "\n",
+    "    #predict labels\n",
+    "    y_pred = model.predict(X)\n",
+    "\n",
+    "    #calculate confusion matrix\n",
+    "    cm = confusion_matrix (y, y_pred)\n",
+    "\n",
+    "    #calculate precision \n",
+    "    precision = precision_score(y,y_pred)\n",
+    "\n",
+    "    #calculate recall\n",
+    "    recall = recall_score(y, y_pred)\n",
+    "\n",
+    "    #calculate f1 score\n",
+    "    f1 = f1_score(y , y_pred)\n",
+    "\n",
+    "    return cm, precision,recall,f1\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0079d20f-59e1-4826-b471-503a4b6a9996",
+   "metadata": {},
+   "source": [
+    "A2: REGRESSION METRICS (FORMULA IMPEMENTATION)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "13cbbdee-6e19-45d9-9d63-32efc7b8f5e0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def regression_metrics(y_true, y_pred):\n",
+    "\n",
+    "    #mean squared error\n",
+    "    mse =  np.mean((y_true - y_pred)**2)\n",
+    "\n",
+    "    #root mean squared error\n",
+    "    rmse = np.sqrt(mse)\n",
+    "\n",
+    "    #mean absolute percentage error\n",
+    "    mape = np.mean(np.abs((y_true - y_pred)/y_true))*100\n",
+    "\n",
+    "    #R2 score calculation\n",
+    "    ss_res = np.sum((y_true - y_pred)**2)\n",
+    "    ss_tot = np.sum((y_true - np.mean(y_true))**2)\n",
+    "\n",
+    "    r2 = 1-(ss_res/ss_tot)\n",
+    "\n",
+    "    return mse, rmse , mape ,r2\n",
+    "    \n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6dd6cc77-f593-48ea-9b09-a9e04aae6627",
+   "metadata": {},
+   "source": [
+    "A5: TEST DIFFERENT K VALUES"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "afd12e8f-4656-463b-a2e3-2e8e56b3a897",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def test_different_k(X_train , y_train , X_test):\n",
+    "\n",
+    "    #try multiple k values\n",
+    "    for k in [1,3,5,7]:\n",
+    "\n",
+    "        model = train_knn(X_train, y_train, k)\n",
+    "\n",
+    "        preds = model.predict(X_test)\n",
+    "        print (\"k: \", k, \"tested\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "343d6bd2-01d7-4eba-87a8-99bfa2ae2e0e",
+   "metadata": {},
+   "source": [
+    "A7: FIND BEST K USING GRID SEARCH"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "e34ee680-8a2f-49fb-9173-83a992dc191f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def find_best_k(X_train, y_train):\n",
+    "\n",
+    "    #base model\n",
+    "    model  = KNeighborsClassifier()\n",
+    "\n",
+    "    #list of k values to test \n",
+    "    params = {\"n_neighbors\":[1,3,5,7,9]}\n",
+    "\n",
+    "    #create grid search object\n",
+    "    grid = GridSearchCV(model,params)\n",
+    "\n",
+    "    #grid search\n",
+    "    grid.fit(X_train, y_train)\n",
+    "\n",
+    "    # return best k value\n",
+    "    return grid.best_params_[\"n_neighbors\"]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d69cbbdb-4c2f-4bc7-944b-9e71e518c896",
+   "metadata": {},
+   "source": [
+    "MAIN PROGRAM\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "6b8988d6-c7bd-4f1b-9376-5f15bdaaba48",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train Results: (array([[158,  14],\n",
+      "       [ 18,  83]]), 0.8556701030927835, 0.8217821782178217, 0.8383838383838383)\n",
+      "Test Results: (array([[29,  8],\n",
+      "       [14, 18]]), 0.6923076923076923, 0.5625, 0.6206896551724138)\n",
+      "k:  1 tested\n",
+      "k:  3 tested\n",
+      "k:  5 tested\n",
+      "k:  7 tested\n",
+      "Best k: 9\n"
+     ]
+    }
+   ],
+   "source": [
+    "X, y = load_data()\n",
+    "\n",
+    "X_vec = vectorize_text(X)\n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split(\n",
+    "    X_vec, y, test_size=0.2, random_state=1\n",
+    ")\n",
+    "\n",
+    "model = train_knn(X_train, y_train, 3)\n",
+    "\n",
+    "train_results = evaluate_model(model, X_train, y_train)\n",
+    "test_results = evaluate_model(model, X_test, y_test)\n",
+    "\n",
+    "print(\"Train Results:\", train_results)\n",
+    "print(\"Test Results:\", test_results)\n",
+    "\n",
+    "test_different_k(X_train, y_train, X_test)\n",
+    "\n",
+    "best_k = find_best_k(X_train, y_train)\n",
+    "\n",
+    "print(\"Best k:\", best_k)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9b414c14-dc28-4f2e-ab30-559c75182ad6",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python [conda env:base] *",
+   "language": "python",
+   "name": "conda-base-py"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
